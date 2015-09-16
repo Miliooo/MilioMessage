@@ -70,6 +70,28 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, $this->getReceiverThreadMeta($thread, 'receiver_1')->getUnreadMessageCount());
     }
 
+    /**
+     * @test
+     */
+    public function a_new_thread_has_one_message()
+    {
+        $command = $this->getCommand();
+        $thread = Thread::createNewThread($command);
+        $this->assertEquals(1, count($thread->getMessages()));
+        $this->assertInstanceOf('Milio\Message\Model\MessageInterface', $thread->getMessages()[0]);
+    }
+
+    /**
+     * @test
+     */
+    public function sender_of_message_is_owner_of_thread()
+    {
+        $command = $this->getCommand();
+        $thread = Thread::createNewThread($command);
+        $this->assertEquals('sender_id', $thread->getMessages()[0]->getSender());
+
+    }
+
     private function getCommand()
     {
         return new CreateNewThreadCommand('thread_id', 'sender_id', ['receiver_1', 'receiver_2'], 'this is the title', 'message', new \DateTime('2011-01-01'));

@@ -92,6 +92,12 @@ class Thread implements ThreadInterface
             $thread->threadMeta->add($metaReceiver);
         }
 
+        $message = new Message();
+        $message->setCreatedAt($command->getCreatedAt());
+        $message->setSender($command->getSenderId());
+        $message->setBody($command->getMessage());
+        $message->setThread($thread);
+        $thread->messages->add($message);
         return $thread;
     }
 
@@ -100,7 +106,7 @@ class Thread implements ThreadInterface
      */
     public function getMessages()
     {
-
+        return $this->messages;
     }
 
     /**

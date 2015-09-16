@@ -2,6 +2,8 @@
 
 namespace Milio\Message\Model;
 
+use Doctrine\Common\Collections\ArrayCollection;
+
 class Message implements MessageInterface
 {
     /**
