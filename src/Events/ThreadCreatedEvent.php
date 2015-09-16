@@ -2,13 +2,9 @@
 
 namespace Milio\Message\Events;
 
-use Broadway\Serializer\SerializableInterface;
-use BroadwaySerialization\Serialization\Serializable;
 
-class NewThreadCreatedEvent implements SerializableInterface
+class ThreadCreatedEvent
 {
-    use Serializable;
-
     private $threadId;
     private $senderId;
     private $receiverIds;

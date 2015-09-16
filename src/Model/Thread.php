@@ -3,7 +3,8 @@
 namespace Milio\Message\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Milio\Message\Commands\CreateNewThreadCommand;
+use Milio\Message\Commands\CreateThread;
+use Milio\Message\Exceptions\ThreadMetaForParticipantNotFoundException;
 
 class Thread implements ThreadInterface
 {
@@ -43,7 +44,7 @@ class Thread implements ThreadInterface
     protected $messages;
 
     /**
-     * An array collection of thread metas for this thread
+     * An array collection of thread meta for this thread
      *
      * @var ArrayCollection|ThreadMeta[]
      */
@@ -63,41 +64,39 @@ class Thread implements ThreadInterface
      */
     protected $lastMessage;
 
-
-    public static function createNewThread(CreateNewThreadCommand $command)
+    public function __construct(ThreadId $threadId, $createdBy, $createdAt)
     {
-        $thread = new Thread();
-        $thread->messages = new ArrayCollection();
-        $thread->threadMeta = new ArrayCollection();
-        $thread->participants = new ArrayCollection();
-        $thread->createdBy = $command->getSenderId();
-        $thread->createdAt = $command->getCreatedAt();
-        $thread->threadId = $command->getThreadId();
+        $this->threadId = $threadId;
+        $this->createdBy = $createdBy;
+        $this->createdAt = $createdAt;
+        $this->messages = new ArrayCollection();
+        $this->threadMeta = new ArrayCollection();
+        $this->participants = new ArrayCollection();
+    }
 
-        //create new threadMeta for each participant
-        //todo check if we need to set lastMessageDate
-        $metaSender =  new ThreadMeta();
-        $metaSender->setThread($thread);
-        $metaSender->setParticipant($command->getSenderId());
-        $metaSender->setLastParticipantMessageDate($thread->createdAt);
+    /**
+     * Creates a new thread.
+     *
+     * @param CreateThread $command
+     * @return ThreadInterface
+     */
+    public static function createNewThread(CreateThread $command)
+    {
+        $thread = Thread::getThreadClass($command->getThreadId(), $command->getSenderId(), $command->getCreatedAt());
+        $metaSender =  new ThreadMeta($thread, $command->getSenderId());
+        $metaSender->setLastParticipantMessageDate($thread->getCreatedAt());
         $metaSender->setUnreadMessageCount(0);
-        $thread->threadMeta->add($metaSender);
+        $thread->addThreadMeta($metaSender);
 
         foreach($command->getReceiverIds() as $receiverId) {
-            $metaReceiver = new ThreadMeta();
-            $metaReceiver->setThread($thread);
-            $metaReceiver->setParticipant($receiverId);
+            $metaReceiver = new ThreadMeta($thread, $receiverId);
             $metaReceiver->setUnreadMessageCount(1);
-            $metaReceiver->setLastMessageDate($thread->createdAt);
-            $thread->threadMeta->add($metaReceiver);
+            $metaReceiver->setLastMessageDate($thread->getCreatedAt());
+            $thread->addThreadMeta($metaReceiver);
         }
 
-        $message = new Message();
-        $message->setCreatedAt($command->getCreatedAt());
-        $message->setSender($command->getSenderId());
-        $message->setBody($command->getMessage());
-        $message->setThread($thread);
-        $thread->messages->add($message);
+        $message = Thread::getMessageClass($thread, $command->getSenderId(), $command->getBody(), $command->getCreatedAt());
+        $thread->addMessage($message);
         return $thread;
     }
 
@@ -128,8 +127,7 @@ class Thread implements ThreadInterface
             }
         }
 
-        throw new \InvalidArgumentException('could not find meta for user id with '.$userId);
-
+        throw new ThreadMetaForParticipantNotFoundException();
     }
 
     /**
@@ -153,6 +151,89 @@ class Thread implements ThreadInterface
      */
     public function getThreadId()
     {
-        return $this->threadId;
+        return $this->threadId->getValue();
+    }
+
+    /**
+     * @param string $threadId
+     * @param string $createdBy
+     * @param \DateTime $createdAt
+     *
+     * @return Thread
+     */
+    public static function getThreadClass(ThreadId $threadId, $createdBy, \DateTime $createdAt)
+    {
+        return new Thread($threadId, $createdBy, $createdAt);
+    }
+
+    /**
+     * @param ThreadInterface $thread
+     * @param $senderId
+     * @param $body
+     * @param \DateTime $createdAt
+     *
+     * @return Message
+     */
+    public static function getMessageClass(ThreadInterface $thread, $senderId, $body, \DateTime $createdAt) {
+        return new Message($thread,  $senderId, $body, $createdAt);
+    }
+
+    protected function addThreadMeta(ThreadMetaInterface $threadMeta)
+    {
+        $this->threadMeta->add($threadMeta);
+    }
+
+    protected function addMessage(MessageInterface $message)
+    {
+        $this->messages->add($message);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getParticipants()
+    {
+        return $this->getParticipantsCollection()->toArray();
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function isParticipant($userId)
+    {
+        return $this->getParticipantsCollection()->contains($userId);
+    }
+
+    /**
+     * Returns an array collection of participants for the given thread.
+     *
+     * @return ArrayCollection
+     */
+    private function getParticipantsCollection()
+    {
+        //doctrine skips constructor and does not make an array collection
+        //since there is no mapping taking place
+        if ($this->participants == null) {
+            $this->participants = new ArrayCollection();
+        }
+
+        //there is thread meta in the collection so let's loop over it
+        foreach ($this->threadMeta as $threadMeta) {
+            $this->addParticipantFromThreadMeta($threadMeta);
+        }
+        return $this->participants;
+    }
+
+    /**
+     * Adds a participant form the thread meta
+     *
+     * @param ThreadMetaInterface $threadMeta The threadm eta we extract the participant from
+     */
+    private function addParticipantFromThreadMeta(ThreadMetaInterface $threadMeta)
+    {
+        $participant = $threadMeta->getParticipant();
+
+        if (!$this->participants->contains($participant)) {
+            $this->participants->add($participant);
+        }
     }
 }

@@ -3,6 +3,7 @@
 namespace Milio\Message\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Milio\Message\Exceptions\ThreadMetaForParticipantNotFoundException;
 
 interface ThreadInterface
 {
@@ -16,7 +17,7 @@ interface ThreadInterface
     /**
      * Returns an array collection with thread meta
      *
-     * @return ArrayCollection An ArrayCollection of threadmeta
+     * @return ArrayCollection An ArrayCollection of thread meta
      */
     public function getThreadMeta();
 
@@ -24,6 +25,8 @@ interface ThreadInterface
      * Gets thread meta for the given participant
      *
      * @param string $userId The participant
+     *
+     * @throws ThreadMetaForParticipantNotFoundException When no thread meta was found for given participant
      *
      * @return ThreadMetaInterface
      */
@@ -46,5 +49,19 @@ interface ThreadInterface
      */
     public function getThreadId();
 
+    /**
+     * Gets all the participants for the current thread
+     *
+     * @return string[] An array with participants
+     */
+    public function getParticipants();
 
+    /**
+     * Checks if the given participant is a participant of the thread
+     *
+     * @param string $userId The participant we check
+     *
+     * @return boolean true if participant, false otherwise
+     */
+    public function isParticipant($userId);
 }

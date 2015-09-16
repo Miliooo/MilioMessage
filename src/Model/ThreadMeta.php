@@ -60,11 +60,14 @@ class ThreadMeta implements ThreadMetaInterface
     protected $unreadMessageCount = 0;
 
     /**
-     * Constructor.
+     * @param ThreadInterface $thread
+     * @param string          $participant
      */
-    public function __construct()
+    public function __construct(ThreadInterface $thread, $participant)
     {
         $this->status = ThreadMetaInterface::STATUS_ACTIVE;
+        $this->thread = $thread;
+        $this->participant = $participant;
     }
 
     /**

@@ -20,39 +20,19 @@ interface MessageInterface
     public function getCreatedAt();
 
     /**
-     * Sets the creation time of the message
-     *
-     * @param \DateTime $createdAt The time the message was created
-     */
-    public function setCreatedAt(\DateTime $createdAt);
-
-    /**
      * Gets the body of the message
      *
      * @return string The body
      */
     public function getBody();
 
-    /**
-     * Sets the body of the message
-     *
-     * @param string $body The body
-     */
-    public function setBody($body);
-
-    /**
-     * Sets the sender of the message
-     *
-     * @param string $sender The sender of the message
-     */
-    public function setSender($sender);
 
     /**
      * Gets the sender of the message
      *
      * @return string
      */
-    public function getSender();
+    public function getSenderId();
 
     /**
      * Adds message meta to the messageMeta collection
@@ -76,13 +56,6 @@ interface MessageInterface
      * @return MessageMetaInterface|null The messagemeta or null when not found
      */
     public function getMessageMetaForParticipant($participant);
-
-    /**
-     * Sets the thread this message belongs to
-     *
-     * @param ThreadInterface $thread The thread this message belongs to
-     */
-    public function setThread(ThreadInterface $thread);
 
     /**
      * Gets the thread this message belongs to

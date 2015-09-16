@@ -22,20 +22,6 @@ interface ThreadMetaInterface
     public function getParticipant();
 
     /**
-     * Sets the participant of the thread meta
-     *
-     * @param string $participant The participant
-     */
-    public function setParticipant($participant);
-
-    /**
-     * Sets the thread for this thread meta
-     *
-     * @param ThreadInterface $thread The thread this meta belongs to
-     */
-    public function setThread(ThreadInterface $thread);
-
-    /**
      * Gets the thread for this thread meta
      *
      * @return ThreadInterface the thread this meta belongs to

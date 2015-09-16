@@ -2,60 +2,80 @@
 
 namespace Milio\Message\Commands;
 
-class CreateNewThreadCommand
+use Milio\Message\Model\ThreadId;
+
+class CreateThread
 {
+    /**
+     * @var ThreadId
+     */
     private $threadId;
     private $senderId;
     private $receiverIds;
     private $title;
-    private $message;
+    private $body;
     private $createdAt;
 
     /**
-     * @param string $threadId
+     * @param ThreadId $threadId
      * @param string $senderId
      * @param string[] $receiverIds
      * @param string $title
-     * @param string $message
+     * @param string $body
      * @param \DateTime $createdAt
      */
-    public function __construct($threadId, $senderId, array $receiverIds, $title, $message, \DateTime $createdAt)
+    public function __construct(ThreadId $threadId, $senderId, array $receiverIds, $title, $body, \DateTime $createdAt)
     {
         $this->threadId = $threadId;
         $this->senderId = $senderId;
         $this->receiverIds = $receiverIds;
         $this->title = $title;
-        $this->message = $message;
+        $this->body = $body;
         $this->createdAt = $createdAt;
     }
 
+    /**
+     * @return string
+     */
     public function getSenderId()
     {
         return $this->senderId;
     }
 
+    /**
+     * @return string Title of the thread
+     */
     public function getTitle()
     {
         return $this->title;
     }
 
+    /**
+     * @return string
+     */
     public function getThreadId()
     {
         return $this->threadId;
     }
 
+    /**
+     * @return \DateTime The date the thread was created
+     */
     public function getCreatedAt()
     {
         return $this->createdAt;
     }
 
+    /**
+     * @return array|\string[] The receivers of the thread
+     */
     public function getReceiverIds()
     {
         return $this->receiverIds;
     }
 
-    public function getMessage()
+    public function getBody()
     {
-        return $this->message;
+        return $this->body;
     }
 }

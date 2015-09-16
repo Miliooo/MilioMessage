@@ -25,7 +25,7 @@ class Message implements MessageInterface
      *
      * @var string
      */
-    protected $sender;
+    protected $senderId;
 
     /**
      * The body of the message
@@ -49,10 +49,17 @@ class Message implements MessageInterface
     protected $thread;
 
     /**
-     * Constructor.
+     * @param ThreadInterface $thread
+     * @param string $senderId
+     * @param string $body
+     * @param \DateTime $createdAt
      */
-    public function __construct()
+    public function __construct(ThreadInterface $thread, $senderId, $body, \DateTime $createdAt)
     {
+        $this->thread = $thread;
+        $this->senderId = $senderId;
+        $this->body = $body;
+        $this->createdAt = $createdAt;
         $this->messageMeta = new ArrayCollection();
     }
 
@@ -64,13 +71,6 @@ class Message implements MessageInterface
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setCreatedAt(\DateTime $createdAt)
-    {
-        $this->createdAt = $createdAt;
-    }
 
     /**
      * {@inheritdoc}
@@ -91,25 +91,9 @@ class Message implements MessageInterface
     /**
      * {@inheritdoc}
      */
-    public function setBody($body)
+    public function getSenderId()
     {
-        $this->body = $body;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setSender($sender)
-    {
-        $this->sender = $sender;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getSender()
-    {
-        return $this->sender;
+        return $this->senderId;
     }
 
     /**
@@ -141,14 +125,6 @@ class Message implements MessageInterface
         }
 
         return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setThread(ThreadInterface $thread)
-    {
-        $this->thread = $thread;
     }
 
     /**
