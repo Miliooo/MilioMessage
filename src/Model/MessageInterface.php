@@ -2,6 +2,8 @@
 
 namespace Milio\Message\Model;
 
+use Milio\Message\Exceptions\MessageMetaForParticipantNotFoundException;
+use Doctrine\Common\Collections\ArrayCollection;
 
 interface MessageInterface
 {
@@ -53,7 +55,9 @@ interface MessageInterface
      *
      * @param string $participant The participant
      *
-     * @return MessageMetaInterface|null The messagemeta or null when not found
+     * @throws MessageMetaForParticipantNotFoundException
+     *
+     * @return MessageMetaInterface
      */
     public function getMessageMetaForParticipant($participant);
 

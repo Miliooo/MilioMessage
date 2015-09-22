@@ -51,7 +51,7 @@ class CreateThread
     }
 
     /**
-     * @return string
+     * @return ThreadId
      */
     public function getThreadId()
     {

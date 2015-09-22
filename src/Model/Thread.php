@@ -83,20 +83,36 @@ class Thread implements ThreadInterface
     public static function createNewThread(CreateThread $command)
     {
         $thread = Thread::getThreadClass($command->getThreadId(), $command->getSenderId(), $command->getCreatedAt());
-        $metaSender =  new ThreadMeta($thread, $command->getSenderId());
+        $metaSender =  Thread::getThreadMetaClass($thread, $command->getSenderId());
         $metaSender->setLastParticipantMessageDate($thread->getCreatedAt());
         $metaSender->setUnreadMessageCount(0);
         $thread->addThreadMeta($metaSender);
 
         foreach($command->getReceiverIds() as $receiverId) {
-            $metaReceiver = new ThreadMeta($thread, $receiverId);
+            $metaReceiver = Thread::getThreadMetaClass($thread, $receiverId);
             $metaReceiver->setUnreadMessageCount(1);
             $metaReceiver->setLastMessageDate($thread->getCreatedAt());
             $thread->addThreadMeta($metaReceiver);
         }
 
+        //create the message
         $message = Thread::getMessageClass($thread, $command->getSenderId(), $command->getBody(), $command->getCreatedAt());
+
+        //create the message meta for sender
+        $messageMeta = Thread::GetMessageMetaClass($message, $command->getSenderId());
+        $messageMeta->setIsRead(true);
+        $message->addMessageMeta($messageMeta);
+
+        foreach($command->getReceiverIds() as $receiverId) {
+            $messageMeta = Thread::GetMessageMetaClass($message, $receiverId);
+            $messageMeta->setIsRead(false);
+            $message->addMessageMeta($messageMeta);
+        }
+
         $thread->addMessage($message);
+
+
+
         return $thread;
     }
 
@@ -155,10 +171,9 @@ class Thread implements ThreadInterface
     }
 
     /**
-     * @param string $threadId
-     * @param string $createdBy
+     * @param ThreadId $threadId
+     * @param $createdBy
      * @param \DateTime $createdAt
-     *
      * @return Thread
      */
     public static function getThreadClass(ThreadId $threadId, $createdBy, \DateTime $createdAt)
@@ -167,6 +182,11 @@ class Thread implements ThreadInterface
     }
 
     /**
+     * Gets the message class.
+     *
+     * Overwrite this method if you have a custom message class.
+     * This should extend the Message class provided in this library
+     *
      * @param ThreadInterface $thread
      * @param $senderId
      * @param $body
@@ -176,6 +196,37 @@ class Thread implements ThreadInterface
      */
     public static function getMessageClass(ThreadInterface $thread, $senderId, $body, \DateTime $createdAt) {
         return new Message($thread,  $senderId, $body, $createdAt);
+    }
+
+    /**
+     * Gets the thread meta class.
+     *
+     * Overwrite this method if you have a custom thread meta class.
+     * This should extend the thread meta class provided in this library
+     *
+     * @param ThreadInterface $thread
+     * @param $participant
+     *
+     * @return ThreadMeta
+     */
+    public static function getThreadMetaClass(ThreadInterface $thread, $participant)
+    {
+        return new ThreadMeta($thread, $participant);
+    }
+
+    /**
+     * Gets the message meta class
+     *
+     * Overwrite this method if you have a custom message meta class.
+     * This should extend the message meta class provided in this library
+     *
+     * @param MessageInterface $message
+     * @param $participant
+     * @return MessageMeta
+     */
+    public static function getMessageMetaClass(MessageInterface $message, $participant)
+    {
+        return new MessageMeta($message, $participant);
     }
 
     protected function addThreadMeta(ThreadMetaInterface $threadMeta)

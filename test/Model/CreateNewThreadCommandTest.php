@@ -2,7 +2,6 @@
 
 namespace Milio\Message\Model;
 
-use Milio\Message\Commands\CreateNewThreadCommand;
 use Milio\Message\Commands\CreateThread;
 
 class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
@@ -102,6 +101,39 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
+     */
+    public function there_are_three_message_metas()
+    {
+        $command = $this->getCommand();
+        $thread = Thread::createNewThread($command);
+        $message = $this->getMessageWhenThreadCreated($thread);
+        $this->assertEquals(3, count($message->getMessageMeta()));
+    }
+
+    /**
+     * @test
+     */
+    public function the_sender_has_the_message_set_as_read()
+    {
+        $command = $this->getCommand();
+        $thread = Thread::createNewThread($command);
+        $message = $this->getMessageWhenThreadCreated($thread);
+        $this->assertTrue($message->getMessageMetaForParticipant('sender_id')->isRead());
+    }
+
+    /**
+     * @test
+     */
+    public function the_receiver_has_the_message_as_unread()
+    {
+        $command = $this->getCommand();
+        $thread = Thread::createNewThread($command);
+        $message = $this->getMessageWhenThreadCreated($thread);
+        $this->assertFalse($message->getMessageMetaForParticipant('receiver_1')->isRead());
+    }
+
+    /**
+     * @test
      * @expectedException \Milio\Message\Exceptions\ThreadMetaForParticipantNotFoundException
      */
     public function get_thread_meta_for_non_participant_throws_exception()
@@ -133,6 +165,15 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
     private function getSenderThreadMeta(ThreadInterface $thread)
     {
         return $thread->getThreadMetaForParticipant('sender_id');
+    }
+
+    /**
+     * @param ThreadInterface $thread
+     * @return MessageInterface
+     */
+    private function getMessageWhenThreadCreated(ThreadInterface $thread)
+    {
+        return $thread->getMessages()[0];
     }
 
     private function getReceiverThreadMeta(ThreadInterface $thread, $userId)

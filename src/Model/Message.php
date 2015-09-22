@@ -35,7 +35,7 @@ class Message implements MessageInterface
     protected $body;
 
     /**
-     * A collection of message metas
+     * A collection of message meta
      *
      * @var ArrayCollection
      */
@@ -101,7 +101,6 @@ class Message implements MessageInterface
      */
     public function addMessageMeta(MessageMetaInterface $messageMeta)
     {
-        $messageMeta->setMessage($this);
         $this->messageMeta->add($messageMeta);
     }
 
