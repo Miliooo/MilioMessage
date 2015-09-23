@@ -10,10 +10,8 @@ use Milio\Message\Commands\ReplyToThread;
 class Thread implements ThreadInterface
 {
     /**
-    * The unique id of the thread
-    *
-    * @var integer
-    */
+     * @var ThreadId
+     */
     protected $threadId;
 
     /**
@@ -57,13 +55,6 @@ class Thread implements ThreadInterface
      * @var ArrayCollection
      */
     protected $participants;
-
-    /**
-     * The last message posted in this thread.
-     *
-     * @var MessageInterface
-     */
-    protected $lastMessage;
 
     public function __construct(ThreadId $threadId, $createdBy, $createdAt)
     {
