@@ -76,19 +76,17 @@ class Thread implements ThreadInterface
     public static function createNewThread(CreateThread $command)
     {
         $thread = Thread::getThreadClass($command->getThreadId(), $command->getSenderId(), $command->getCreatedAt());
-        $metaSender =  Thread::getThreadMetaClass($thread, $command->getSenderId());
-        $metaSender->setLastParticipantMessageDate($thread->getCreatedAt());
+        $metaSender =  Thread::getThreadMetaClass($thread, $command->getSenderId(), $command->getCreatedAt());
+        $metaSender->setLastParticipantMessageDate($command->getCreatedAt());
         $metaSender->setUnreadMessageCount(0);
         $thread->addThreadMeta($metaSender);
 
         foreach($command->getReceiverIds() as $receiverId) {
-            $metaReceiver = Thread::getThreadMetaClass($thread, $receiverId);
+            $metaReceiver = Thread::getThreadMetaClass($thread, $receiverId, $command->getCreatedAt());
             $metaReceiver->setUnreadMessageCount(1);
-            $metaReceiver->setLastMessageDate($thread->getCreatedAt());
             $thread->addThreadMeta($metaReceiver);
         }
 
-        //creates a new message
         self::addMessageToThread($thread, $command->getSenderId(), $command->getReceiverIds(), $command->getBody(), $command->getCreatedAt());
 
         return $thread;
@@ -96,8 +94,6 @@ class Thread implements ThreadInterface
 
     public function replyToThread(ReplyToThread $command)
     {
-        //although we should validate the command in a service, we still don't want to have an invalid model so we do some
-        //assertions here too.
         $this->assertValidThread($command->getThreadId());
 
         //update the thread meta for the sender.
@@ -149,8 +145,6 @@ class Thread implements ThreadInterface
         $messageMeta = Thread::GetMessageMetaClass($message, $senderId);
         $messageMeta->setIsRead(true);
         $message->addMessageMeta($messageMeta);
-
-        return $message;
     }
 
     private static function createMessageMetaReceiver(MessageInterface $message, $senderId)
@@ -158,8 +152,6 @@ class Thread implements ThreadInterface
         $messageMeta = Thread::GetMessageMetaClass($message, $senderId);
         $messageMeta->setIsRead(false);
         $message->addMessageMeta($messageMeta);
-
-        return $message;
     }
 
     /**
@@ -234,9 +226,15 @@ class Thread implements ThreadInterface
     }
 
     /**
+     * Gets the thread class.
+     *
+     * Overwrite this method if you have a custom thread class.
+     * This should extend the thread class provided in this library
+     *
      * @param ThreadId $threadId
      * @param $createdBy
      * @param \DateTime $createdAt
+     *
      * @return Thread
      */
     public static function getThreadClass(ThreadId $threadId, $createdBy, \DateTime $createdAt)
@@ -269,12 +267,13 @@ class Thread implements ThreadInterface
      *
      * @param ThreadInterface $thread
      * @param $participant
+     * @param \DateTime $lastMessageDate
      *
      * @return ThreadMeta
      */
-    public static function getThreadMetaClass(ThreadInterface $thread, $participant)
+    public static function getThreadMetaClass(ThreadInterface $thread, $participant, \DateTime $lastMessageDate)
     {
-        return new ThreadMeta($thread, $participant);
+        return new ThreadMeta($thread, $participant, $lastMessageDate);
     }
 
     /**
@@ -291,7 +290,6 @@ class Thread implements ThreadInterface
     {
         return new MessageMeta($message, $participant);
     }
-
 
 
     protected function addThreadMeta(ThreadMetaInterface $threadMeta)
@@ -311,6 +309,7 @@ class Thread implements ThreadInterface
     {
         return $this->getParticipantsCollection()->toArray();
     }
+
     /**
      * {@inheritdoc}
      */

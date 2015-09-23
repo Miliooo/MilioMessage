@@ -61,13 +61,15 @@ class ThreadMeta implements ThreadMetaInterface
 
     /**
      * @param ThreadInterface $thread
-     * @param string          $participant
+     * @param $participant
+     * @param \DateTime $lastMessageDate
      */
-    public function __construct(ThreadInterface $thread, $participant)
+    public function __construct(ThreadInterface $thread, $participant, \DateTime $lastMessageDate)
     {
         $this->status = ThreadMetaInterface::STATUS_ACTIVE;
         $this->thread = $thread;
         $this->participant = $participant;
+        $this->lastMessageDate = $lastMessageDate;
     }
 
     /**

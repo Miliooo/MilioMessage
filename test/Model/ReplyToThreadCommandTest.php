@@ -24,7 +24,6 @@ class ReplyToThreadCommandTest extends \PHPUnit_Framework_TestCase
     public function it_returns_a_thread()
     {
         $thread = $this->thread->replyToThread($this->getReplyToThreadCommand());
-
         $this->assertInstanceOf('Milio\Message\Model\ThreadInterface', $thread);
     }
 
@@ -45,7 +44,6 @@ class ReplyToThreadCommandTest extends \PHPUnit_Framework_TestCase
     public function it_updates_the_last_participants_message_date()
     {
         $thread = $this->thread->replyToThread($this->getReplyToThreadCommand());
-
         $this->assertEquals($this->getDateCreated(), $thread->getThreadMetaForParticipant('user_1')->getLastParticipantMessageDate());
         $this->assertEquals($this->getDateReplied(), $thread->getThreadMetaForParticipant('user_2')->getLastParticipantMessageDate());
         $this->assertNull($thread->getThreadMetaForParticipant('user_3')->getLastParticipantMessageDate());
