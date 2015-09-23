@@ -10,7 +10,7 @@ interface ThreadInterface
     /**
      * Gets all the messages contained in the thread.
      *
-     * @return ArrayCollection
+     * @return ArrayCollection|MessageInterface
      */
     public function getMessages();
 
@@ -59,11 +59,18 @@ interface ThreadInterface
     /**
      * Checks if the given participant is a participant of the thread
      *
-     * @param string $userId The participant we check
+     * @param string $participantId The participant we check
      *
      * @return boolean true if participant, false otherwise
      */
-    public function isParticipant($userId);
+    public function isParticipant($participantId);
+
+    /**
+     * @param $participantId
+     *
+     * @return string[]
+     */
+    public function getOtherParticipants($participantId);
 
     /**
      * Adds a message to the thread

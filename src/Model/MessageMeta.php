@@ -6,6 +6,11 @@ namespace Milio\Message\Model;
 class MessageMeta implements MessageMetaInterface
 {
     /**
+     * @var MessageMetaId
+     */
+    protected $messageMetaId;
+
+    /**
      * @var MessageInterface The message this message meta belongs to
      */
     protected $message;
@@ -21,11 +26,13 @@ class MessageMeta implements MessageMetaInterface
     protected $isRead;
 
     /**
+     * @param MessageMetaId $messageMetaId
      * @param MessageInterface $message
      * @param $participant
      */
-    public function __construct(MessageInterface $message, $participant)
+    public function __construct(MessageMetaId $messageMetaId, MessageInterface $message, $participant)
     {
+        $this->messageMetaId = $messageMetaId;
         $this->message = $message;
         $this->participant = $participant;
     }
@@ -57,5 +64,13 @@ class MessageMeta implements MessageMetaInterface
     public function getMessage()
     {
         return $this->message;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMessageMetaId()
+    {
+        return $this->messageMetaId;
     }
 }

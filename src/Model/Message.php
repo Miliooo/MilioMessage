@@ -11,7 +11,7 @@ class Message implements MessageInterface
      *
      * @var integer The unique id of the message
      */
-    protected $id;
+    protected $messageId;
 
     /**
      * The creation time of the message
@@ -49,13 +49,15 @@ class Message implements MessageInterface
     protected $thread;
 
     /**
+     * @param MessageId $messageId
      * @param ThreadInterface $thread
-     * @param string $senderId
-     * @param string $body
+     * @param $senderId
+     * @param $body
      * @param \DateTime $createdAt
      */
-    public function __construct(ThreadInterface $thread, $senderId, $body, \DateTime $createdAt)
+    public function __construct(MessageId $messageId, ThreadInterface $thread, $senderId, $body, \DateTime $createdAt)
     {
+        $this->messageId = $messageId;
         $this->thread = $thread;
         $this->senderId = $senderId;
         $this->body = $body;
@@ -66,9 +68,9 @@ class Message implements MessageInterface
     /**
      * {@inheritdoc}
      */
-    public function getId()
+    public function getMessageId()
     {
-        return $this->id;
+        return $this->messageId;
     }
 
 
@@ -132,5 +134,50 @@ class Message implements MessageInterface
     public function getThread()
     {
         return $this->thread;
+    }
+
+    public static function createMessageId()
+    {
+        return new MessageId(MessageId::generate());
+    }
+
+    public static function createMessageMetaId()
+    {
+        return new MessageMetaId(MessageMetaId::generate());
+    }
+
+    /**
+     * Gets the message class.
+     *
+     * Overwrite this method if you have a custom message class.
+     * This should extend the Message class provided in this library
+     *
+     * @param MessageId $messageId
+     * @param ThreadInterface $thread
+     * @param $senderId
+     * @param $body
+     * @param \DateTime $createdAt
+     *
+     * @return Message
+     */
+    public static function getMessageClass(MessageId $messageId, ThreadInterface $thread, $senderId, $body, \DateTime $createdAt) {
+        return new Message($messageId, $thread,  $senderId, $body, $createdAt);
+    }
+
+    /**
+     * Gets the message meta class
+     *
+     * Overwrite this method if you have a custom message meta class.
+     * This should extend the message meta class provided in this library
+     *
+     * @param MessageMetaId    $messageMetaId
+     * @param MessageInterface $message
+     * @param $participant
+     *
+     * @return MessageMeta
+     */
+    public static function getMessageMetaClass(MessageMetaId $messageMetaId, MessageInterface $message, $participant)
+    {
+        return new MessageMeta($messageMetaId, $message, $participant);
     }
 }

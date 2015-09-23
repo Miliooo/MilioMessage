@@ -12,7 +12,7 @@ interface MessageInterface
      *
      * @return integer The unique id of the message
      */
-    public function getId();
+    public function getMessageId();
 
     /**
      * Gets the creation time of the message

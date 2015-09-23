@@ -74,6 +74,11 @@ class CreateThread
         return $this->receiverIds;
     }
 
+    /**
+     * The body of the message
+     *
+     * @return string
+     */
     public function getBody()
     {
         return $this->body;

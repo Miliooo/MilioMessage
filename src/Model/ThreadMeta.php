@@ -13,9 +13,9 @@ class ThreadMeta implements ThreadMetaInterface
     /**
      * The unique id of the thread
      *
-     * @var integer
+     * @var string
      */
-    protected $id;
+    protected $threadMetaId;
 
     /**
      * The thread this meta belongs to
@@ -60,16 +60,16 @@ class ThreadMeta implements ThreadMetaInterface
     protected $unreadMessageCount = 0;
 
     /**
+     * @param ThreadMetaId    $threadMetaId
      * @param ThreadInterface $thread
-     * @param $participant
-     * @param \DateTime $lastMessageDate
+     * @param string          $participant
      */
-    public function __construct(ThreadInterface $thread, $participant, \DateTime $lastMessageDate)
+    public function __construct(ThreadMetaId $threadMetaId, ThreadInterface $thread, $participant)
     {
+        $this->threadMetaId = $threadMetaId;
         $this->status = ThreadMetaInterface::STATUS_ACTIVE;
         $this->thread = $thread;
         $this->participant = $participant;
-        $this->lastMessageDate = $lastMessageDate;
     }
 
     /**
@@ -77,9 +77,9 @@ class ThreadMeta implements ThreadMetaInterface
      *
      * @return integer|null
      */
-    public function getId()
+    public function getThreadMetaId()
     {
-        return $this->id;
+        return $this->threadMetaId;
     }
 
     /**

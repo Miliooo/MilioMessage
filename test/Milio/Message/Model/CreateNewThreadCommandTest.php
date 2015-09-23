@@ -4,7 +4,7 @@ namespace Milio\Message\Model;
 
 use Milio\Message\Commands\CreateThread;
 
-class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
+class CreateNewThreadCommandTest extends AbstractThreadCommand
 {
     /**
      * @test
@@ -23,7 +23,8 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
     {
         $command = $this->getCreateThreadCommand();
         $thread = Thread::createNewThread($command);
-        $this->assertEquals('thread_id', $thread->getThreadId());
+        $this->assertEquals($this->getThreadId(), $thread->getThreadId());
+        $this->assertTrue(is_string($thread->getThreadId()));
     }
 
     /**
@@ -39,7 +40,7 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function it_returns_the_creation_at()
+    public function it_returns_the_created_at()
     {
         $command = $this->getCreateThreadCommand();
         $thread = Thread::createNewThread($command);
@@ -159,7 +160,7 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
 
     private function getCreateThreadCommand()
     {
-        return new CreateThread(new ThreadId('thread_id'), 'sender_id', ['receiver_1', 'receiver_2'], 'this is the title', 'message', new \DateTime('2011-01-01'));
+        return new CreateThread($this->getThreadId(), 'sender_id', ['receiver_1', 'receiver_2'], 'this is the title', 'message', new \DateTime('2011-01-01'));
     }
 
     private function getSenderThreadMeta(ThreadInterface $thread)

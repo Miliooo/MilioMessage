@@ -33,7 +33,7 @@ class ReplyToThreadCommandTest extends \PHPUnit_Framework_TestCase
     public function it_updates_the_last_message_date()
     {
         $thread = $this->thread->replyToThread($this->getReplyToThreadCommand());
-        $this->assertEquals($this->getDateReplied(), $thread->getThreadMetaForParticipant('user_2')->getLastMessageDate());
+        $this->assertEquals($this->getDateCreated(), $thread->getThreadMetaForParticipant('user_2')->getLastMessageDate());
         $this->assertEquals($this->getDateReplied(), $thread->getThreadMetaForParticipant('user_1')->getLastMessageDate());
         $this->assertEquals($this->getDateReplied(), $thread->getThreadMetaForParticipant('user_3')->getLastMessageDate());
     }

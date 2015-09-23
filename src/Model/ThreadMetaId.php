@@ -2,7 +2,7 @@
 
 namespace Milio\Message\Model;
 
-class ThreadId extends AbstractId
+class ThreadMetaId extends AbstractId
 {
 
 }

@@ -10,9 +10,9 @@ interface ThreadMetaInterface
     /**
      * Gets the unique id of the thread meta
      *
-     * @return integer
+     * @return string
      */
-    public function getId();
+    public function getThreadMetaId();
 
     /**
      * Gets the participant of the thread meta

@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Milio\Message\Commands\CreateThread;
 use Milio\Message\Exceptions\ThreadMetaForParticipantNotFoundException;
 use Milio\Message\Commands\ReplyToThread;
+use Milio\Message\Commands\MarkMessagesAsRead;
 
 class Thread implements ThreadInterface
 {
@@ -56,7 +57,7 @@ class Thread implements ThreadInterface
      */
     protected $participants;
 
-    public function __construct(ThreadId $threadId, $createdBy, $createdAt)
+    private function __construct(ThreadId $threadId, $createdBy, $createdAt)
     {
         $this->threadId = $threadId;
         $this->createdBy = $createdBy;
@@ -76,14 +77,15 @@ class Thread implements ThreadInterface
     public static function createNewThread(CreateThread $command)
     {
         $thread = Thread::getThreadClass($command->getThreadId(), $command->getSenderId(), $command->getCreatedAt());
-        $metaSender =  Thread::getThreadMetaClass($thread, $command->getSenderId(), $command->getCreatedAt());
+        $metaSender =  Thread::getThreadMetaClass(self::createThreadMetaId(), $thread, $command->getSenderId());
         $metaSender->setLastParticipantMessageDate($command->getCreatedAt());
         $metaSender->setUnreadMessageCount(0);
         $thread->addThreadMeta($metaSender);
 
         foreach($command->getReceiverIds() as $receiverId) {
-            $metaReceiver = Thread::getThreadMetaClass($thread, $receiverId, $command->getCreatedAt());
+            $metaReceiver = Thread::getThreadMetaClass(self::createThreadMetaId(), $thread, $receiverId);
             $metaReceiver->setUnreadMessageCount(1);
+            $metaReceiver->setLastMessageDate($command->getCreatedAt());
             $thread->addThreadMeta($metaReceiver);
         }
 
@@ -99,21 +101,13 @@ class Thread implements ThreadInterface
         //update the thread meta for the sender.
         $threadMetaSender = $this->getThreadMetaForParticipant($command->getSenderId());
         $threadMetaSender->setLastParticipantMessageDate($command->getCreatedAt());
-        $threadMetaSender->setLastMessageDate($command->getCreatedAt());
 
-        //update the thread meta for the receivers.
-        $threadMetaReceivers = $this->getThreadMetaNotForParticipant($command->getSenderId());
-        foreach($threadMetaReceivers as $threadMetaReceiver) {
+        $receivers = $this->getOtherParticipants($command->getSenderId());
+
+        foreach($receivers as $receiver) {
+            $threadMetaReceiver = $this->getThreadMetaForParticipant($receiver);
             $threadMetaReceiver->setLastMessageDate($command->getCreatedAt());
             $threadMetaReceiver->setUnreadMessageCount($threadMetaReceiver->getUnreadMessageCount() + 1);
-        }
-
-        //some logic to get the receivers..
-        $receivers = [];
-        foreach($this->getParticipants() as $participant) {
-            if($participant !== $command->getSenderId()) {
-                $receivers[] = $participant;
-            }
         }
 
         self::addMessageToThread($this, $command->getSenderId(), $receivers, $command->getBody(), $command->getCreatedAt());
@@ -121,35 +115,60 @@ class Thread implements ThreadInterface
         return $this;
     }
 
+    /**
+     * @param MarkMessagesAsRead $command
+     *
+     * @return array Where first key is the thread, and second key is the updated messages
+     */
+    public function markMessagesAsRead(MarkMessagesAsRead $command)
+    {
+        if(!$this->isParticipant($command->getParticipant())) {
+            return [$this, []];
+        }
+
+        $updatedMessages = [];
+        foreach($this->getMessages() as $message) {
+            if(in_array($message->getId(), $command->getMessages())) {
+                $messageMetaParticipant = $message->getMessageMetaForParticipant($command->getParticipant());
+                $messageMetaParticipant->setIsRead(true);
+                $threadMetaParticipant = $this->getThreadMetaForParticipant($command->getParticipant());
+                $threadMetaParticipant->setUnreadMessageCount($threadMetaParticipant->getUnreadMessageCount() - 1);
+                $updatedMessages[] = $message;
+            }
+        }
+
+        return [$this, $updatedMessages];
+    }
+
     protected static function addMessageToThread(ThreadInterface $thread, $senderId, array $receiverIds, $body, $createdAt)
     {
-        $message = self::createNewMessage($thread, $senderId, $body, $createdAt);
-        self::createMessageMetaSender($message, $senderId);
+        $message = self::createNewMessage(Message::createMessageId(), $thread, $senderId, $body, $createdAt);
+        self::createMessageMetaSender(Message::createMessageMetaId(), $message, $senderId);
 
         foreach($receiverIds as $receiverId) {
-            self::createMessageMetaReceiver($message, $receiverId);
+            self::createMessageMetaReceiver(Message::createMessageMetaId(), $message, $receiverId);
         }
 
         $thread->addMessage($message);
     }
 
-    private static function createNewMessage($thread, $senderId, $body, \DateTime $createdAt)
+    private static function createNewMessage(MessageId $messageId, $thread, $senderId, $body, \DateTime $createdAt)
     {
-        $message = Thread::getMessageClass($thread, $senderId, $body, $createdAt);
+        $message = Message::getMessageClass($messageId, $thread, $senderId, $body, $createdAt);
 
         return $message;
     }
 
-    private static function createMessageMetaSender(MessageInterface $message, $senderId)
+    private static function createMessageMetaSender(MessageMetaId $messageMetaId, MessageInterface $message, $senderId)
     {
-        $messageMeta = Thread::GetMessageMetaClass($message, $senderId);
+        $messageMeta = Message::GetMessageMetaClass($messageMetaId, $message, $senderId);
         $messageMeta->setIsRead(true);
         $message->addMessageMeta($messageMeta);
     }
 
-    private static function createMessageMetaReceiver(MessageInterface $message, $senderId)
+    private static function createMessageMetaReceiver(MessageMetaId $messageMetaId, MessageInterface $message, $senderId)
     {
-        $messageMeta = Thread::GetMessageMetaClass($message, $senderId);
+        $messageMeta = Message::GetMessageMetaClass($messageMetaId, $message, $senderId);
         $messageMeta->setIsRead(false);
         $message->addMessageMeta($messageMeta);
     }
@@ -182,22 +201,6 @@ class Thread implements ThreadInterface
         }
 
         throw new ThreadMetaForParticipantNotFoundException();
-    }
-
-    /**
-     * @param $participantId
-     * @return ThreadMetaInterface[]|ArrayCollection[]
-     */
-    public function getThreadMetaNotForParticipant($participantId)
-    {
-        $result = [];
-        foreach($this->threadMeta as $meta) {
-            if($meta->getParticipant() !== $participantId) {
-                $result[] = $meta;
-            }
-        }
-
-        return $result;
     }
 
 
@@ -243,54 +246,21 @@ class Thread implements ThreadInterface
     }
 
     /**
-     * Gets the message class.
-     *
-     * Overwrite this method if you have a custom message class.
-     * This should extend the Message class provided in this library
-     *
-     * @param ThreadInterface $thread
-     * @param $senderId
-     * @param $body
-     * @param \DateTime $createdAt
-     *
-     * @return Message
-     */
-    public static function getMessageClass(ThreadInterface $thread, $senderId, $body, \DateTime $createdAt) {
-        return new Message($thread,  $senderId, $body, $createdAt);
-    }
-
-    /**
      * Gets the thread meta class.
      *
      * Overwrite this method if you have a custom thread meta class.
      * This should extend the thread meta class provided in this library
      *
+     * @param ThreadMetaId    $threadMetaId
      * @param ThreadInterface $thread
-     * @param $participant
-     * @param \DateTime $lastMessageDate
+     * @param string          $participant
      *
      * @return ThreadMeta
      */
-    public static function getThreadMetaClass(ThreadInterface $thread, $participant, \DateTime $lastMessageDate)
+    public static function getThreadMetaClass(ThreadMetaId $threadMetaId, ThreadInterface $thread, $participant)
     {
-        return new ThreadMeta($thread, $participant, $lastMessageDate);
+        return new ThreadMeta($threadMetaId, $thread, $participant);
     }
-
-    /**
-     * Gets the message meta class
-     *
-     * Overwrite this method if you have a custom message meta class.
-     * This should extend the message meta class provided in this library
-     *
-     * @param MessageInterface $message
-     * @param $participant
-     * @return MessageMeta
-     */
-    public static function getMessageMetaClass(MessageInterface $message, $participant)
-    {
-        return new MessageMeta($message, $participant);
-    }
-
 
     protected function addThreadMeta(ThreadMetaInterface $threadMeta)
     {
@@ -300,6 +270,16 @@ class Thread implements ThreadInterface
     public function addMessage(MessageInterface $message)
     {
         $this->messages->add($message);
+    }
+
+    public static function createThreadId()
+    {
+        return new ThreadId(ThreadId::generate());
+    }
+
+    public static function createThreadMetaId()
+    {
+        return new ThreadMetaId(ThreadMetaId::generate());
     }
 
     /**
@@ -313,9 +293,22 @@ class Thread implements ThreadInterface
     /**
      * {@inheritdoc}
      */
-    public function isParticipant($userId)
+    public function isParticipant($participantId)
     {
-        return $this->getParticipantsCollection()->contains($userId);
+        return $this->getParticipantsCollection()->contains($participantId);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOtherParticipants($participantId)
+    {
+        $otherParticipants = $this->getParticipants();
+        $key = array_search($participantId, $otherParticipants, true);
+        if (false !== $key) {
+            unset($otherParticipants[$key]);
+        }
+        return array_values($otherParticipants);
     }
 
     /**
