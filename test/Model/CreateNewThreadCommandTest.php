@@ -11,7 +11,7 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function it_returns_a_thread()
     {
-        $command = $this->getCommand();
+        $command = $this->getCreateThreadCommand();
         $thread = Thread::createNewThread($command);
         $this->assertInstanceOf('Milio\Message\Model\ThreadInterface', $thread);
     }
@@ -21,7 +21,7 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function it_returns_the_thread_id()
     {
-        $command = $this->getCommand();
+        $command = $this->getCreateThreadCommand();
         $thread = Thread::createNewThread($command);
         $this->assertEquals('thread_id', $thread->getThreadId());
     }
@@ -31,7 +31,7 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function it_returns_the_created_by()
     {
-        $command = $this->getCommand();
+        $command = $this->getCreateThreadCommand();
         $thread = Thread::createNewThread($command);
         $this->assertEquals('sender_id', $thread->getCreatedBy());
     }
@@ -41,7 +41,7 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function it_returns_the_creation_at()
     {
-        $command = $this->getCommand();
+        $command = $this->getCreateThreadCommand();
         $thread = Thread::createNewThread($command);
 
         $created = new \DateTime('2011-01-01');
@@ -53,7 +53,7 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function sender_of_new_thread_has_zero_unread_messages()
     {
-        $command = $this->getCommand();
+        $command = $this->getCreateThreadCommand();
         $thread = Thread::createNewThread($command);
         $this->assertEquals(0, $this->getSenderThreadMeta($thread)->getUnreadMessageCount());
     }
@@ -63,7 +63,7 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function retriever_of_new_thread_has_one_unread_message()
     {
-        $command = $this->getCommand();
+        $command = $this->getCreateThreadCommand();
         $thread = Thread::createNewThread($command);
         $this->assertEquals(1, $this->getReceiverThreadMeta($thread, 'receiver_1')->getUnreadMessageCount());
     }
@@ -73,7 +73,7 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function a_new_thread_has_one_message()
     {
-        $command = $this->getCommand();
+        $command = $this->getCreateThreadCommand();
         $thread = Thread::createNewThread($command);
         $this->assertEquals(1, count($thread->getMessages()));
         $this->assertInstanceOf('Milio\Message\Model\MessageInterface', $thread->getMessages()[0]);
@@ -84,7 +84,7 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function a_message_has_a_body()
     {
-        $command = $this->getCommand();
+        $command = $this->getCreateThreadCommand();
         $thread = Thread::createNewThread($command);
         $this->assertEquals('message', $thread->getMessages()[0]->getBody());
     }
@@ -94,7 +94,7 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function sender_of_message_is_owner_of_thread()
     {
-        $command = $this->getCommand();
+        $command = $this->getCreateThreadCommand();
         $thread = Thread::createNewThread($command);
         $this->assertEquals('sender_id', $thread->getMessages()[0]->getSenderId());
     }
@@ -104,10 +104,10 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function there_are_three_message_metas()
     {
-        $command = $this->getCommand();
+        $command = $this->getCreateThreadCommand();
         $thread = Thread::createNewThread($command);
         $message = $this->getMessageWhenThreadCreated($thread);
-        $this->assertEquals(3, count($message->getMessageMeta()));
+        $this->assertEquals(3, $message->getMessageMeta()->count());
     }
 
     /**
@@ -115,7 +115,7 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function the_sender_has_the_message_set_as_read()
     {
-        $command = $this->getCommand();
+        $command = $this->getCreateThreadCommand();
         $thread = Thread::createNewThread($command);
         $message = $this->getMessageWhenThreadCreated($thread);
         $this->assertTrue($message->getMessageMetaForParticipant('sender_id')->isRead());
@@ -126,7 +126,7 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function the_receiver_has_the_message_as_unread()
     {
-        $command = $this->getCommand();
+        $command = $this->getCreateThreadCommand();
         $thread = Thread::createNewThread($command);
         $message = $this->getMessageWhenThreadCreated($thread);
         $this->assertFalse($message->getMessageMetaForParticipant('receiver_1')->isRead());
@@ -138,7 +138,7 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function get_thread_meta_for_non_participant_throws_exception()
     {
-        $command = $this->getCommand();
+        $command = $this->getCreateThreadCommand();
         $thread = Thread::createNewThread($command);
         $thread->getThreadMetaForParticipant('foo');
     }
@@ -148,7 +148,7 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function there_are_three_participants()
     {
-        $command = $this->getCommand();
+        $command = $this->getCreateThreadCommand();
         $thread = Thread::createNewThread($command);
         $participants = $thread->getParticipants();
         $this->assertEquals(3, count($participants));
@@ -157,7 +157,7 @@ class CreateNewThreadCommandTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($thread->isParticipant('receiver_2'));
     }
 
-    private function getCommand()
+    private function getCreateThreadCommand()
     {
         return new CreateThread(new ThreadId('thread_id'), 'sender_id', ['receiver_1', 'receiver_2'], 'this is the title', 'message', new \DateTime('2011-01-01'));
     }

@@ -24,13 +24,13 @@ interface ThreadInterface
     /**
      * Gets thread meta for the given participant
      *
-     * @param string $userId The participant
+     * @param string $participantId The participant
      *
      * @throws ThreadMetaForParticipantNotFoundException When no thread meta was found for given participant
      *
      * @return ThreadMetaInterface
      */
-    public function getThreadMetaForParticipant($userId);
+    public function getThreadMetaForParticipant($participantId);
 
     /**
      * Gets the participant who created the thread.
@@ -64,4 +64,11 @@ interface ThreadInterface
      * @return boolean true if participant, false otherwise
      */
     public function isParticipant($userId);
+
+    /**
+     * Adds a message to the thread
+     *
+     * @param MessageInterface $message
+     */
+    public function addMessage(MessageInterface $message);
 }

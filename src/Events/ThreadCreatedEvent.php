@@ -2,7 +2,7 @@
 
 namespace Milio\Message\Events;
 
-
+//todo not sure how much info we need, maybe just the thread id?
 class ThreadCreatedEvent
 {
     private $threadId;

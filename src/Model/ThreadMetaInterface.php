@@ -17,7 +17,7 @@ interface ThreadMetaInterface
     /**
      * Gets the participant of the thread meta
      *
-     * @return ParticipantInterface
+     * @return string the participant id
      */
     public function getParticipant();
 

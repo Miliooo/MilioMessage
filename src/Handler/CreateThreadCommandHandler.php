@@ -3,14 +3,17 @@
 namespace Milio\Message\Handler;
 
 use Milio\Message\Commands\CreateThread;
-use Milio\Message\Model\Thread;
 use Milio\Message\Validators\CreateThreadValidatorInterface;
 use Milio\Message\Errors\CreateThreadError;
+use Milio\Message\Commands\ReplyToThread;
 
 class CreateThreadCommandHandler
 {
     private $validator;
 
+    /**
+     * @param CreateThreadValidatorInterface $validator
+     */
     public function __construct(CreateThreadValidatorInterface $validator)
     {
         $this->validator = $validator;
@@ -28,12 +31,25 @@ class CreateThreadCommandHandler
             return $result;
         }
 
-        //create the model
-        $thread = Thread::createNewThread($command);
+        //we should probably split the thread and the message as was done in the fos message bundle
+        //http://docs.doctrine-project.org/en/latest/reference/working-with-associations.html#transitive-persistence-cascade-operations
+        //$thread = Thread::createNewThread($command);
+        //store the thread
+        //$this->threadRepository->save($thread)
 
-        //a service that knows how to save the thread, i don't care how it gets saved at the moment...
+        //$message = $thread->getMessages()->last();
+        //store the message
+        //$this->messageRepository->save($thread->getMessages()->last);
+    }
 
-        //maybe return the thread id, so the controller can get more information...
-        return null;
+    //needs also a validator service
+    public function handleReplyToThreadCommand(ReplyToThread $command)
+    {
+        //thread repository get thread
+        //$thread = $this->threadRepository->get($thread)
+
+        //$thread = thread->replyToThread($command)
+        //$this->threadRepository->save($thread)
+        //$this->messageRepository->save($thread->getMessages()->last)
     }
 }

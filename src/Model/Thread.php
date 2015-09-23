@@ -5,6 +5,7 @@ namespace Milio\Message\Model;
 use Doctrine\Common\Collections\ArrayCollection;
 use Milio\Message\Commands\CreateThread;
 use Milio\Message\Exceptions\ThreadMetaForParticipantNotFoundException;
+use Milio\Message\Commands\ReplyToThread;
 
 class Thread implements ThreadInterface
 {
@@ -78,6 +79,7 @@ class Thread implements ThreadInterface
      * Creates a new thread.
      *
      * @param CreateThread $command
+     *
      * @return ThreadInterface
      */
     public static function createNewThread(CreateThread $command)
@@ -95,25 +97,78 @@ class Thread implements ThreadInterface
             $thread->addThreadMeta($metaReceiver);
         }
 
-        //create the message
-        $message = Thread::getMessageClass($thread, $command->getSenderId(), $command->getBody(), $command->getCreatedAt());
+        //creates a new message
+        self::addMessageToThread($thread, $command->getSenderId(), $command->getReceiverIds(), $command->getBody(), $command->getCreatedAt());
 
-        //create the message meta for sender
-        $messageMeta = Thread::GetMessageMetaClass($message, $command->getSenderId());
-        $messageMeta->setIsRead(true);
-        $message->addMessageMeta($messageMeta);
+        return $thread;
+    }
 
-        foreach($command->getReceiverIds() as $receiverId) {
-            $messageMeta = Thread::GetMessageMetaClass($message, $receiverId);
-            $messageMeta->setIsRead(false);
-            $message->addMessageMeta($messageMeta);
+    public function replyToThread(ReplyToThread $command)
+    {
+        //although we should validate the command in a service, we still don't want to have an invalid model so we do some
+        //assertions here too.
+        $this->assertValidThread($command->getThreadId());
+
+        //update the thread meta for the sender.
+        $threadMetaSender = $this->getThreadMetaForParticipant($command->getSenderId());
+        $threadMetaSender->setLastParticipantMessageDate($command->getCreatedAt());
+        $threadMetaSender->setLastMessageDate($command->getCreatedAt());
+
+        //update the thread meta for the receivers.
+        $threadMetaReceivers = $this->getThreadMetaNotForParticipant($command->getSenderId());
+        foreach($threadMetaReceivers as $threadMetaReceiver) {
+            $threadMetaReceiver->setLastMessageDate($command->getCreatedAt());
+            $threadMetaReceiver->setUnreadMessageCount($threadMetaReceiver->getUnreadMessageCount() + 1);
+        }
+
+        //some logic to get the receivers..
+        $receivers = [];
+        foreach($this->getParticipants() as $participant) {
+            if($participant !== $command->getSenderId()) {
+                $receivers[] = $participant;
+            }
+        }
+
+        self::addMessageToThread($this, $command->getSenderId(), $receivers, $command->getBody(), $command->getCreatedAt());
+
+        return $this;
+    }
+
+    protected static function addMessageToThread(ThreadInterface $thread, $senderId, array $receiverIds, $body, $createdAt)
+    {
+        $message = self::createNewMessage($thread, $senderId, $body, $createdAt);
+        self::createMessageMetaSender($message, $senderId);
+
+        foreach($receiverIds as $receiverId) {
+            self::createMessageMetaReceiver($message, $receiverId);
         }
 
         $thread->addMessage($message);
+    }
 
+    private static function createNewMessage($thread, $senderId, $body, \DateTime $createdAt)
+    {
+        $message = Thread::getMessageClass($thread, $senderId, $body, $createdAt);
 
+        return $message;
+    }
 
-        return $thread;
+    private static function createMessageMetaSender(MessageInterface $message, $senderId)
+    {
+        $messageMeta = Thread::GetMessageMetaClass($message, $senderId);
+        $messageMeta->setIsRead(true);
+        $message->addMessageMeta($messageMeta);
+
+        return $message;
+    }
+
+    private static function createMessageMetaReceiver(MessageInterface $message, $senderId)
+    {
+        $messageMeta = Thread::GetMessageMetaClass($message, $senderId);
+        $messageMeta->setIsRead(false);
+        $message->addMessageMeta($messageMeta);
+
+        return $message;
     }
 
     /**
@@ -135,16 +190,33 @@ class Thread implements ThreadInterface
     /**
      * {@inheritdoc}
      */
-    public function getThreadMetaForParticipant($userId)
+    public function getThreadMetaForParticipant($participantId)
     {
         foreach ($this->threadMeta as $meta) {
-            if ($meta->getParticipant() == $userId) {
+            if ($meta->getParticipant() == $participantId) {
                 return $meta;
             }
         }
 
         throw new ThreadMetaForParticipantNotFoundException();
     }
+
+    /**
+     * @param $participantId
+     * @return ThreadMetaInterface[]|ArrayCollection[]
+     */
+    public function getThreadMetaNotForParticipant($participantId)
+    {
+        $result = [];
+        foreach($this->threadMeta as $meta) {
+            if($meta->getParticipant() !== $participantId) {
+                $result[] = $meta;
+            }
+        }
+
+        return $result;
+    }
+
 
     /**
      * {@inheritdoc}
@@ -229,12 +301,14 @@ class Thread implements ThreadInterface
         return new MessageMeta($message, $participant);
     }
 
+
+
     protected function addThreadMeta(ThreadMetaInterface $threadMeta)
     {
         $this->threadMeta->add($threadMeta);
     }
 
-    protected function addMessage(MessageInterface $message)
+    public function addMessage(MessageInterface $message)
     {
         $this->messages->add($message);
     }
@@ -277,7 +351,7 @@ class Thread implements ThreadInterface
     /**
      * Adds a participant form the thread meta
      *
-     * @param ThreadMetaInterface $threadMeta The threadm eta we extract the participant from
+     * @param ThreadMetaInterface $threadMeta The thread meta we extract the participant from
      */
     private function addParticipantFromThreadMeta(ThreadMetaInterface $threadMeta)
     {
@@ -285,6 +359,13 @@ class Thread implements ThreadInterface
 
         if (!$this->participants->contains($participant)) {
             $this->participants->add($participant);
+        }
+    }
+
+    private function assertValidThread(ThreadId $threadId)
+    {
+        if($this->threadId->getValue() !== $threadId->getValue()) {
+            throw new \InvalidArgumentException('expected thread to be '.$this->threadId->getValue().' got '.$threadId->getValue());
         }
     }
 }
