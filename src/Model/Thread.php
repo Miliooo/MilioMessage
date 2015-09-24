@@ -57,8 +57,9 @@ class Thread implements ThreadInterface
      */
     protected $participants;
 
-    private function __construct(ThreadId $threadId, $createdBy, $createdAt)
+    private function __construct(ThreadId $threadId, $subject, $createdBy, $createdAt)
     {
+        $this->subject = $subject;
         $this->threadId = $threadId;
         $this->createdBy = $createdBy;
         $this->createdAt = $createdAt;
@@ -76,7 +77,7 @@ class Thread implements ThreadInterface
      */
     public static function createNewThread(CreateThread $command)
     {
-        $thread = Thread::getThreadClass($command->getThreadId(), $command->getSenderId(), $command->getCreatedAt());
+        $thread = Thread::getThreadClass($command->getThreadId(), $command->getSubject(), $command->getSenderId(), $command->getCreatedAt());
         $metaSender =  Thread::getThreadMetaClass(self::createThreadMetaId(), $thread, $command->getSenderId());
         $metaSender->setLastParticipantMessageDate($command->getCreatedAt());
         $metaSender->setUnreadMessageCount(0);
@@ -128,7 +129,7 @@ class Thread implements ThreadInterface
 
         $updatedMessages = [];
         foreach($this->getMessages() as $message) {
-            if(in_array($message->getId(), $command->getMessages())) {
+            if(in_array($message->getId(), $command->getMessageIds(), true)) {
                 $messageMetaParticipant = $message->getMessageMetaForParticipant($command->getParticipant());
                 $messageMetaParticipant->setIsRead(true);
                 $threadMetaParticipant = $this->getThreadMetaForParticipant($command->getParticipant());
@@ -235,14 +236,15 @@ class Thread implements ThreadInterface
      * This should extend the thread class provided in this library
      *
      * @param ThreadId $threadId
+     * @param string   $subject
      * @param $createdBy
      * @param \DateTime $createdAt
      *
      * @return Thread
      */
-    public static function getThreadClass(ThreadId $threadId, $createdBy, \DateTime $createdAt)
+    public static function getThreadClass(ThreadId $threadId, $subject, $createdBy, \DateTime $createdAt)
     {
-        return new Thread($threadId, $createdBy, $createdAt);
+        return new Thread($threadId, $subject, $createdBy, $createdAt);
     }
 
     /**
@@ -270,6 +272,11 @@ class Thread implements ThreadInterface
     public function addMessage(MessageInterface $message)
     {
         $this->messages->add($message);
+    }
+
+    public function getSubject()
+    {
+        return $this->subject;
     }
 
     public static function createThreadId()

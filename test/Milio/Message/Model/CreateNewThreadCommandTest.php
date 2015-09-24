@@ -49,6 +49,18 @@ class CreateNewThreadCommandTest extends AbstractThreadCommand
         $this->assertEquals($created, $thread->getCreatedAt());
     }
 
+
+    /**
+     * @test
+     */
+    public function it_returns_the_subject()
+    {
+        $command = $this->getCreateThreadCommand();
+        $thread = Thread::createNewThread($command);
+
+        $this->assertEquals('this is the title', $thread->getSubject(), 'subject gets returned');
+    }
+
     /**
      * @test
      */

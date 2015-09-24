@@ -12,7 +12,7 @@ class CreateThread
     private $threadId;
     private $senderId;
     private $receiverIds;
-    private $title;
+    private $subject;
     private $body;
     private $createdAt;
 
@@ -20,16 +20,16 @@ class CreateThread
      * @param ThreadId $threadId
      * @param string $senderId
      * @param string[] $receiverIds
-     * @param string $title
+     * @param string $subject
      * @param string $body
      * @param \DateTime $createdAt
      */
-    public function __construct(ThreadId $threadId, $senderId, array $receiverIds, $title, $body, \DateTime $createdAt)
+    public function __construct(ThreadId $threadId, $senderId, array $receiverIds, $subject, $body, \DateTime $createdAt)
     {
         $this->threadId = $threadId;
         $this->senderId = $senderId;
         $this->receiverIds = $receiverIds;
-        $this->title = $title;
+        $this->subject = $subject;
         $this->body = $body;
         $this->createdAt = $createdAt;
     }
@@ -45,9 +45,9 @@ class CreateThread
     /**
      * @return string Title of the thread
      */
-    public function getTitle()
+    public function getSubject()
     {
-        return $this->title;
+        return $this->subject;
     }
 
     /**

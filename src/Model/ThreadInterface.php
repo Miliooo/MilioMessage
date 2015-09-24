@@ -45,6 +45,11 @@ interface ThreadInterface
     public function getCreatedAt();
 
     /**
+     * @return string The subject of the thread
+     */
+    public function getSubject();
+
+    /**
      * @return string $id
      */
     public function getThreadId();

@@ -14,11 +14,13 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
+    "doctrine/orm": "~2.4",
     "doctrine/common": "~2.4",
     "ramsey/uuid": "~2.4"
   },
   "require-dev": {
-    "phpunit/phpunit": "~4"
+    "phpunit/phpunit": "~4",
+    "webfactory/doctrine-orm-test-infrastructure": "@stable"
   },
   "autoload": {
     "psr-4": {
