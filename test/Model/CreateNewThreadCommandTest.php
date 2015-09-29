@@ -1,8 +1,10 @@
 <?php
 
-namespace Milio\Message\Model;
+namespace Milio\Message\Tests\Model;
 
 use Milio\Message\Commands\CreateThread;
+use Milio\Message\Model\Thread;
+use Milio\Message\Model\ThreadInterface;
 
 class CreateNewThreadCommandTest extends AbstractThreadCommand
 {

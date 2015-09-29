@@ -1,6 +1,5 @@
 <?php
 
-
 if (file_exists($file = __DIR__ . '/../vendor/autoload.php')) {
     $loader = require $file;
     $loader->add('Milio\Message', __DIR__);

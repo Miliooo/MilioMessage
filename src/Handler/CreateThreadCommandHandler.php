@@ -14,7 +14,7 @@ class CreateThreadCommandHandler
     /**
      * @param CreateThreadValidatorInterface $validator
      */
-    public function __construct(CreateThreadValidatorInterface $validator)
+    public function __construct(CreateThreadValidatorInterface $validator, $threadClass)
     {
         $this->validator = $validator;
     }

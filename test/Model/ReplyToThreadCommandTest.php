@@ -1,9 +1,12 @@
 <?php
 
-namespace Milio\Message\Model;
+namespace Milio\Message\Tests\Model;
 
 use Milio\Message\Commands\CreateThread;
 use Milio\Message\Commands\ReplyToThread;
+use Milio\Message\Model\ThreadId;
+use Milio\Message\Model\Thread;
+use Milio\Message\Model\ThreadInterface;
 
 class ReplyToThreadCommandTest extends \PHPUnit_Framework_TestCase
 {
