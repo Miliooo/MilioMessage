@@ -2,7 +2,6 @@
 
 namespace Milio\Message\Model;
 
-
 /**
  * The thread meta model
  *

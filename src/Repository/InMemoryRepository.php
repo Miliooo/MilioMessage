@@ -38,7 +38,7 @@ class InMemoryRepository implements ThreadRepositoryInterface
     {
         $result = [];
         foreach ($this->data as $single) {
-            if($single->isParticipant($participant)
+            if ($single->isParticipant($participant)
                 && $single->getThreadMetaForParticipant($participant)->getLastMessageDate() !== null
             && $single->getThreadMetaForParticipant($participant)->getStatus() === ThreadMetaInterface::STATUS_ACTIVE
             ) {
@@ -56,7 +56,7 @@ class InMemoryRepository implements ThreadRepositoryInterface
     {
         $threadsToInspect = $this->getThreadsForParticipant($participant);
         $count = 0;
-        foreach($threadsToInspect as $thread) {
+        foreach ($threadsToInspect as $thread) {
             $addValue = (integer) $thread->getThreadMetaForParticipant($participant)->getUnreadMessageCount();
             $count = $count + $addValue;
         }
@@ -72,8 +72,8 @@ class InMemoryRepository implements ThreadRepositoryInterface
     private function getThreadsForParticipant($participant)
     {
         $results = [];
-        foreach($this->data as $thread) {
-            if($thread->isParticipant($participant)) {
+        foreach ($this->data as $thread) {
+            if ($thread->isParticipant($participant)) {
                 $results[] = $thread;
             }
         }

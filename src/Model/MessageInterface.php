@@ -67,5 +67,4 @@ interface MessageInterface
      * @return ThreadInterface the thread this message belongs to
      */
     public function getThread();
-
 }

@@ -160,7 +160,8 @@ class Message implements MessageInterface
      *
      * @return Message
      */
-    public static function getMessageClass(MessageId $messageId, ThreadInterface $thread, $senderId, $body, \DateTime $createdAt) {
+    public static function getMessageClass(MessageId $messageId, ThreadInterface $thread, $senderId, $body, \DateTime $createdAt)
+    {
         return new Message($messageId, $thread,  $senderId, $body, $createdAt);
     }
 

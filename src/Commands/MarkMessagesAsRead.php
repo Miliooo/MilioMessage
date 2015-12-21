@@ -36,6 +36,9 @@ class MarkMessagesAsRead
         return $this->messageIds;
     }
 
+    /**
+     * @return string
+     */
     public function getParticipant()
     {
         return $this->participantId;
@@ -43,6 +46,5 @@ class MarkMessagesAsRead
 
     public function getThreadId()
     {
-
     }
 }

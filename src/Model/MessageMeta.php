@@ -2,7 +2,6 @@
 
 namespace Milio\Message\Model;
 
-
 class MessageMeta implements MessageMetaInterface
 {
     /**

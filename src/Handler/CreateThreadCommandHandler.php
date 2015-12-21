@@ -27,7 +27,7 @@ class CreateThreadCommandHandler
     {
         //command validator
         $result = $this->validator->validate($command);
-        if($result instanceof CreateThreadError) {
+        if ($result instanceof CreateThreadError) {
             return $result;
         }
 

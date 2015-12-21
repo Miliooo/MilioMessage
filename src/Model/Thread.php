@@ -83,7 +83,7 @@ class Thread implements ThreadInterface
         $metaSender->setUnreadMessageCount(0);
         $thread->addThreadMeta($metaSender);
 
-        foreach($command->getReceiverIds() as $receiverId) {
+        foreach ($command->getReceiverIds() as $receiverId) {
             $metaReceiver = Thread::getThreadMetaClass(self::createThreadMetaId(), $thread, $receiverId);
             $metaReceiver->setUnreadMessageCount(1);
             $metaReceiver->setLastMessageDate($command->getCreatedAt());
@@ -105,7 +105,7 @@ class Thread implements ThreadInterface
 
         $receivers = $this->getOtherParticipants($command->getSenderId());
 
-        foreach($receivers as $receiver) {
+        foreach ($receivers as $receiver) {
             $threadMetaReceiver = $this->getThreadMetaForParticipant($receiver);
             $threadMetaReceiver->setLastMessageDate($command->getCreatedAt());
             $threadMetaReceiver->setUnreadMessageCount($threadMetaReceiver->getUnreadMessageCount() + 1);
@@ -123,13 +123,13 @@ class Thread implements ThreadInterface
      */
     public function markMessagesAsRead(MarkMessagesAsRead $command)
     {
-        if(!$this->isParticipant($command->getParticipant())) {
+        if (!$this->isParticipant($command->getParticipant())) {
             return [$this, []];
         }
 
         $updatedMessages = [];
-        foreach($this->getMessages() as $message) {
-            if(in_array($message->getId(), $command->getMessageIds(), true)) {
+        foreach ($this->getMessages() as $message) {
+            if (in_array($message->getMessageId(), $command->getMessageIds(), true)) {
                 $messageMetaParticipant = $message->getMessageMetaForParticipant($command->getParticipant());
                 $messageMetaParticipant->setIsRead(true);
                 $threadMetaParticipant = $this->getThreadMetaForParticipant($command->getParticipant());
@@ -146,7 +146,7 @@ class Thread implements ThreadInterface
         $message = self::createNewMessage(Message::createMessageId(), $thread, $senderId, $body, $createdAt);
         self::createMessageMetaSender(Message::createMessageMetaId(), $message, $senderId);
 
-        foreach($receiverIds as $receiverId) {
+        foreach ($receiverIds as $receiverId) {
             self::createMessageMetaReceiver(Message::createMessageMetaId(), $message, $receiverId);
         }
 
@@ -354,7 +354,7 @@ class Thread implements ThreadInterface
 
     private function assertValidThread(ThreadId $threadId)
     {
-        if($this->threadId->getValue() !== $threadId->getValue()) {
+        if ($this->threadId->getValue() !== $threadId->getValue()) {
             throw new \InvalidArgumentException('expected thread to be '.$this->threadId->getValue().' got '.$threadId->getValue());
         }
     }
