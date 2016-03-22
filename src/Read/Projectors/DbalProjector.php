@@ -3,59 +3,51 @@
 namespace Milio\Message\Read\Projectors;
 
 use Broadway\ReadModel\Projector;
-use Doctrine\DBAL\Connection;
 use Milio\Message\Read\Model\Dbal\ViewMessage;
-use Milio\Message\Write\Events\MessageAdded;
+use Milio\Message\Read\Provider\DbalThreadProvider;
+use Milio\Message\Read\Saver\DbalThreadSaver;
 use Milio\Message\Write\Events\MessageAddedEvent;
 use Milio\Message\Write\Events\ThreadCreatedEvent;
 use Milio\Message\Read\Model\Dbal\ViewThread;
+use Symfony\Component\VarDumper\VarDumper;
 
+/**
+ * Projector responsible for generating the thread model and passing it to the dbal storage.
+ */
 class DbalProjector extends Projector
 {
-    private $connection;
-    private $threadTable;
-    private $threadMetaTable;
+    private $threadProvider;
+    private $saver;
 
-    public function __construct()
+    /**
+     * DbalProjector constructor.
+     *
+     * @param DbalThreadProvider $threadProvider
+     * @param DbalThreadSaver    $saver
+     */
+    public function __construct(DbalThreadProvider $threadProvider, DbalThreadSaver $saver)
     {
+        $this->threadProvider = $threadProvider;
+        $this->saver = $saver;
     }
-
 
     public function handleThreadCreatedEvent(ThreadCreatedEvent $event)
     {
         $thread = ViewThread::createFromEvent($event);
 
-        /*$this->connection->insert(
-            'milio_thread',
-            [
-                'thread_id' => $thread->getThreadId(),
-                'subject' => $thread->getSubject(),
-                'sender' => $thread->getSender(),
-                'created_at' => $thread->getDateCreated(),
-            ]);
-
-        foreach ($thread->getThreadMeta() as $threadMeta) {
-            $this->connection->insert(
-                $this->threadMetaTable,
-                [
-                    'thread_id' => $threadMeta->getThreadId(),
-                    'user_id' => $threadMeta->getUserId(),
-                    'unread_count' => $threadMeta->getUnreadCount(),
-                    'is_inbox' => $threadMeta->isInbox(),
-                    ''
-                ]
-            );
-        }*/
-
-        return $thread;
+        $this->saver->threadCreated($thread);
     }
 
     public function handleMessageAddedEvent(MessageAddedEvent $event)
     {
-        //get the thread..
         $thread = $this->threadProvider->getThread($event->getThreadId());
-        $thread = ViewMessage::createFromEvent($event, $thread);
 
-        return $thread;
+        //this can happen if we receive events in the wrong order.
+        if (!$thread) {
+            return;
+        }
+
+        $updated = ViewMessage::createFromEvent($event, $thread);
+        $this->saver->messageAdded($updated, array_slice($thread->getMessages(), -1, 1));
     }
 }

@@ -37,11 +37,12 @@ class ViewThreadTest extends \PHPUnit_Framework_TestCase
         $metaReceiver2->setUnreadCount(0);
         $metaReceiver2->setLastMessageDate(new \DateTime(WriteTestUtils::CREATED_AT));
 
+        $createdAtDt = new \DateTime(WriteTestUtils::CREATED_AT);
         $threadArray = [
             'thread_id' => WriteTestUtils::THREAD_ID,
             'sender' => WriteTestUtils::THREAD_STARTER,
             'subject' => WriteTestUtils::SUBJECT,
-            'created_at' => new \DateTime(WriteTestUtils::CREATED_AT),
+            'created_at' => $createdAtDt->format(\DateTime::ISO8601),
             'metas' => [$metaSender->toArray(), $metaReceiver1->toArray(), $metaReceiver2->toArray()],
         ];
 

@@ -23,7 +23,7 @@ class ViewMessage
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getThreadId()
     {
@@ -31,7 +31,7 @@ class ViewMessage
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getMessageId()
     {
@@ -39,7 +39,7 @@ class ViewMessage
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getSender()
     {
@@ -80,6 +80,7 @@ class ViewMessage
 
     /**
      * @param $participantId
+     *
      * @return ViewMessageMeta
      */
     public function getMessageMetaForParticipant($participantId)
@@ -110,7 +111,8 @@ class ViewMessage
             $array['message_id'],
             $array['sender'],
             $array['body'],
-            $array['created_at']
+            \DateTime::createFromFormat(\DateTime::ISO8601,  $array['created_at'], new \DateTimeZone('UTC'))
+
         );
 
         foreach ($metas as $meta) {
@@ -132,7 +134,7 @@ class ViewMessage
             'message_id' => $this->getMessageId(),
             'sender' => $this->getSender(),
             'body' => $this->getBody(),
-            'created_at' => $this->getCreatedAt(),
+            'created_at' => $this->getCreatedAt()->format(\DateTime::ISO8601),
             'metas' => $metas,
         ];
     }
@@ -143,7 +145,8 @@ class ViewMessage
      * This also updates the thread meta for each user
      *
      * @param MessageAddedEvent $event
-     * @param ViewThread $thread
+     * @param ViewThread        $thread
+     *
      * @return ViewThread
      */
     public static function createFromEvent(MessageAddedEvent $event, ViewThread $thread)

@@ -16,10 +16,10 @@ class CreateThread
     private $createdAt;
 
     /**
-     * @param ThreadId $threadId
-     * @param string $senderId
-     * @param string[] $receiverIds
-     * @param string $subject
+     * @param ThreadId  $threadId
+     * @param string    $senderId
+     * @param string[]  $receiverIds
+     * @param string    $subject
      * @param \DateTime $createdAt
      */
     public function __construct(ThreadId $threadId, $senderId, array $receiverIds, $subject, \DateTime $createdAt)

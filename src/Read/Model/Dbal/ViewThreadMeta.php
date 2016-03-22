@@ -41,7 +41,7 @@ class ViewThreadMeta
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isInbox()
     {
@@ -49,7 +49,7 @@ class ViewThreadMeta
     }
 
     /**
-     * @param boolean $isInbox
+     * @param bool $isInbox
      */
     public function setIsInbox($isInbox)
     {
@@ -69,7 +69,7 @@ class ViewThreadMeta
      */
     public function getUnreadCount()
     {
-        return $this->unreadCount;
+        return intval($this->unreadCount);
     }
 
     /**
@@ -77,7 +77,7 @@ class ViewThreadMeta
      */
     public function setUnreadCount($unreadCount)
     {
-        $this->unreadCount = $unreadCount;
+        $this->unreadCount = intval($unreadCount);
     }
 
     public function toArray()
@@ -87,7 +87,7 @@ class ViewThreadMeta
             'user_id' => $this->getUserId(),
             'is_inbox' => $this->isInbox(),
             'unread_count' => $this->getUnreadCount(),
-            'last_message_date' => $this->getLastMessageDate()->format(\DateTime::ISO8601)
+            'last_message_date' => $this->getLastMessageDate()->format(\DateTime::ISO8601),
         ];
     }
 
@@ -101,7 +101,7 @@ class ViewThreadMeta
         $threadMeta->setIsInbox($array['is_inbox']);
         $threadMeta->setUnreadCount($array['unread_count']);
         $threadMeta->setLastMessageDate(
-            \DateTime::createFromFormat(\DateTime::ISO8601, $array['last_message_date'])
+            \DateTime::createFromFormat(\DateTime::ISO8601, $array['last_message_date'], new \DateTimeZone('UTC'))
             );
 
         return $threadMeta;

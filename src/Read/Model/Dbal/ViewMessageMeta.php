@@ -28,7 +28,7 @@ class ViewMessageMeta
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isRead()
     {

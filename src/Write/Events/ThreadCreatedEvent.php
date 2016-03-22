@@ -81,7 +81,7 @@ class ThreadCreatedEvent implements SerializableInterface
             $data['sender'],
             $data['receiver_ids'],
             $data['subject'],
-            \DateTime::createFromFormat(\DateTime::ISO8601, $data['date_created'])
+            \DateTime::createFromFormat(\DateTime::ISO8601, $data['date_created'], new \DateTimeZone('UTC'))
         );
     }
 
@@ -95,7 +95,7 @@ class ThreadCreatedEvent implements SerializableInterface
             'sender' => $this->getSender(),
             'receiver_ids' => $this->getReceiverIds(),
             'subject' => $this->getSender(),
-            'date_created' => $this->getCreatedAt()->format(\DateTime::ISO8601)
+            'date_created' => $this->getCreatedAt()->format(\DateTime::ISO8601),
         ];
     }
 }

@@ -106,6 +106,7 @@ class ViewThread
 
     /**
      * @param $participantId
+     *
      * @return ViewThreadMeta
      */
     public function getThreadMetaForParticipant($participantId)
@@ -118,7 +119,7 @@ class ViewThread
     }
 
     /**
-     * @return String[]
+     * @return string[]
      */
     public function getParticipants()
     {
@@ -160,7 +161,7 @@ class ViewThread
             $threadArray['sender'],
             self::getReceiversFromMetas($threadMetas, $threadArray['sender']),
             $threadArray['subject'],
-            $threadArray['created_at']
+            \DateTime::createFromFormat(\DateTime::ISO8601,  $threadArray['created_at'], new \DateTimeZone('UTC'))
             );
 
         foreach ($threadMetas as $threadMeta) {
@@ -171,7 +172,7 @@ class ViewThread
     }
 
     /**
-     * Returns an array representation of an thread
+     * Returns an array representation of an thread.
      *
      * @return array
      */
@@ -192,7 +193,7 @@ class ViewThread
             'sender' => $this->getSender(),
             'receivers' => $this->getReceivers(),
             'subject' => $this->getSubject(),
-            'created_at' => $this->getDateCreated(),
+            'created_at' => $this->getDateCreated()->format(\DateTime::ISO8601),
             'metas' => $metas,
             'messages' => $messages,
         ];
@@ -245,7 +246,7 @@ class ViewThread
      * Since we do not store the receivers in the thread table, we get them from the metas.
      *
      * @param ViewThreadMeta[] $threadMetas
-     * @param string $sender
+     * @param string           $sender
      *
      * @return string[]
      */

@@ -81,7 +81,6 @@ class MessageAddedEvent implements SerializableInterface
      */
     public static function deserialize(array $data)
     {
-
     }
 
     /**
@@ -89,6 +88,5 @@ class MessageAddedEvent implements SerializableInterface
      */
     public function serialize()
     {
-
     }
 }
