@@ -43,12 +43,13 @@ class Thread extends EventSourcedAggregateRoot
     {
         $thread = new self();
         $thread->apply(new ThreadCreatedEvent(
-            $command->getThreadId()->getValue(),
+            $command->getThreadId(),
             $command->getSenderId(),
             $command->getReceiverIds(),
             $command->getSubject(),
             $command->getCreatedAt()
         ));
+
 
         return $thread;
     }

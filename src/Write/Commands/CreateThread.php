@@ -2,12 +2,11 @@
 
 namespace Milio\Message\Write\Commands;
 
-use Milio\Message\Model\ThreadId;
 
 class CreateThread
 {
     /**
-     * @var ThreadId
+     * @var string
      */
     private $threadId;
     private $senderId;
@@ -16,13 +15,13 @@ class CreateThread
     private $createdAt;
 
     /**
-     * @param ThreadId  $threadId
+     * @param string    $threadId
      * @param string    $senderId
      * @param string[]  $receiverIds
      * @param string    $subject
      * @param \DateTime $createdAt
      */
-    public function __construct(ThreadId $threadId, $senderId, array $receiverIds, $subject, \DateTime $createdAt)
+    public function __construct($threadId, $senderId, array $receiverIds, $subject, \DateTime $createdAt)
     {
         $this->threadId = $threadId;
         $this->senderId = $senderId;
@@ -48,7 +47,7 @@ class CreateThread
     }
 
     /**
-     * @return ThreadId
+     * @return string
      */
     public function getThreadId()
     {

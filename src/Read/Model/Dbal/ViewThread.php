@@ -126,6 +126,17 @@ class ViewThread
         return array_merge([$this->getSender()], $this->getReceivers());
     }
 
+    public function isParticipant($participant)
+    {
+        foreach ($this->getParticipants() as $single) {
+            if ($single == $participant) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * @param string $userId
      *

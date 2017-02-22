@@ -9,7 +9,6 @@ use Milio\Message\Read\Saver\DbalThreadSaver;
 use Milio\Message\Write\Events\MessageAddedEvent;
 use Milio\Message\Write\Events\ThreadCreatedEvent;
 use Milio\Message\Read\Model\Dbal\ViewThread;
-use Symfony\Component\VarDumper\VarDumper;
 
 /**
  * Projector responsible for generating the thread model and passing it to the dbal storage.

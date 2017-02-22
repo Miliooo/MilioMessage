@@ -9,6 +9,8 @@ use Milio\Message\Write\Commands\CreateThread;
 
 class ThreadCommandHandler extends CommandHandler
 {
+    private $repository;
+
     public function __construct(EventSourcingRepository $repository)
     {
         $this->repository = $repository;

@@ -81,6 +81,8 @@ class DbalThreadProvider
 
         $messages = $this->getMessages($threadId);
 
+
+
         foreach($messages as $message) {
             $thread->addMessage($message);
         }
@@ -95,6 +97,7 @@ class DbalThreadProvider
      */
     public function getMessages($threadId)
     {
+
         $qb = $this->connection->createQueryBuilder();
 
         $qb->select('
@@ -107,10 +110,12 @@ class DbalThreadProvider
             mm.is_read as meta_is_read
         ')
             ->from('milio_message', 'm')
-            ->leftJoin('m', 'milio_message_meta', 'mm', 'mm.message_id = m.message_id')
+            ->innerJoin('m', 'milio_message_meta', 'mm', 'mm.message_id = m.message_id')
             ->where('m.thread_id = :threadId')
 
             ->setParameter('threadId', $threadId, \PDO::PARAM_STR);
+
+
         $stmt = $qb->execute();
         $data = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -127,7 +132,9 @@ class DbalThreadProvider
 
         foreach ($message_arr as $messageId => $value) {
             $i = 0;
+            $arr = false;
             foreach ($value as $row) {
+
                 if ($i == 0) {
                     $createdAt = new \DateTime($row['created_at']);
                     $arr['thread_id'] = $row['thread_id'];
@@ -148,6 +155,7 @@ class DbalThreadProvider
             }
 
             if ($arr) {
+
                 $result[] = ViewMessage::fromArray($arr);
             }
         }

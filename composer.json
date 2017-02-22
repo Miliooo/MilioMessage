@@ -14,8 +14,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
-    "ramsey/uuid": "~2.4",
-    "broadway/broadway": "^0.8.0",
+    "broadway/broadway": "^0.10.0",
     "doctrine/dbal": "^2.5",
     "symfony/var-dumper": "^3.0"
 

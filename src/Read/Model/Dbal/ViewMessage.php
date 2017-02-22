@@ -101,6 +101,7 @@ class ViewMessage
      */
     public static function fromArray($array)
     {
+
         $metas = [];
         foreach ($array['metas'] as $messageMeta) {
             $metas[] = ViewMessageMeta::fromArray($messageMeta);
@@ -140,7 +141,7 @@ class ViewMessage
     }
 
     /**
-     * Creates a new thread from a message added event.
+     * Updates the current thread with a message added event.
      *
      * This also updates the thread meta for each user
      *
@@ -162,6 +163,8 @@ class ViewMessage
             $event->getBody(),
             $event->getCreatedAt()
         );
+
+
 
         //create message meta for sender
         $metaSender = new ViewMessageMeta($event->getMessageId(), $event->getSenderId());

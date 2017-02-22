@@ -31,6 +31,7 @@ class DbalProjectorFunctionalTest extends \PHPUnit_Framework_TestCase
     {
         @unlink( __DIR__.'/apps.db3');
         $connection = DriverManager::getConnection(array('driver' => 'pdo_sqlite', 'path' => __DIR__.'/apps.db3'));
+
         $schemaManager = $connection->getSchemaManager();
         $schema = $schemaManager->createSchema();
 
@@ -71,6 +72,8 @@ class DbalProjectorFunctionalTest extends \PHPUnit_Framework_TestCase
 
         //now do inspections given the created and two messages added event.
         $thread = $this->threadProvider->getThread(WriteTestUtils::THREAD_ID);
+
+
 
         $this->assertEquals(WriteTestUtils::THREAD_ID, $thread->getThreadId());
         $this->assertCount(3, $thread->getParticipants());
